@@ -13,6 +13,7 @@ import com.google.gson.JsonParser;
 import io.budd.util.JsonCommunicator;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class MainActivity extends Activity {
@@ -59,11 +60,21 @@ public class MainActivity extends Activity {
 
 		String settings = "{\"music\":{\"on\":true,\"geners\":[\"Rock\",\"Classic\"]},\"podcasts\":{\"on\":false,\"short\":false,\"medium\":false,\"long\":false},\"news\":{\"on\":false,\"repeat\":0}}";
 		String song = "{\"tracks\":[{\"id\":\"ID\",\"title\":\"Title\",\"source\":\"HTTPSOURCE\"}]}";
-//		JsonCommunicator[.
-		JsonElement element = new JsonParser().parse(settings);
+
+		initialSetup();
 
 //		startPlayingFile("http://media.blubrry.com/uxpodcast/cdn.uxpodcast.com/uxpodcast-episode-047-uxlx2013-07.mp3");
 
+	}
+
+	private void initialSetup() {
+		new JsonCommunicator<Configuration>(Configuration.class) {
+			@Override
+			protected void onPostExecute(List<Configuration> fullItems) {
+				Configuration config = fullItems.get(0);
+				System.out.println(config.music.geners);
+			}
+		}.execute("v1","settings");
 	}
 
 	private void skip(){

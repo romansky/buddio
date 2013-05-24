@@ -28,8 +28,8 @@ public class JsonCommunicator<T> extends AsyncTask<String, Void, List<T>> {
 	@Override
 	protected List<T> doInBackground(String... params) {
 
-		String url = "127.0.0.1";
-		String reqUrlStr = url.concat("/api");
+		String url = "http://192.168.43.80:9000";
+		String reqUrlStr = url;
 		for(String param: params) { reqUrlStr = reqUrlStr.concat('/' + param); }
 
 		try {
