@@ -22,9 +22,11 @@
                 <ToggleButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@drawable/musicxml"
                         android:textOn="Music"
                         android:textOff="Music"
                         android:id="@+id/player_control__toggle_music"/>
+
                 <ToggleButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
