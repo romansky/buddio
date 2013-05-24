@@ -1,13 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
         >
-    <TextView
+
+        <TableLayout
+                android:layout_alignParentBottom="true"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+            <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+                <ToggleButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textOn="Podcasts"
+                        android:textOff="Podcasts"
+                        android:id="@+id/player_control__toggle_podcasts" android:checked="false"/>
+
+                <ToggleButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textOn="Music"
+                        android:textOff="Music"
+                        android:id="@+id/player_control__toggle_music"/>
+                <ToggleButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textOn="News"
+                        android:textOff="News"
+                        android:id="@+id/player_control__toggle_news"/>
+                <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Skip.."
+                        android:id="@+id/player_control__skip" android:layout_column="3"/>
+
+
+            </TableRow>
+        </TableLayout>
+    <TableLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Hello World, MyActivity"
-            />
-</LinearLayout>
+            android:layout_height="wrap_content">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Currently Playiing"
+                />
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PLAYING_DETAILS"
+                android:id="@+id/playing_view__text"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TIME_REMAINING"
+                android:id="@+id/playing_view__time_remaining"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                  android:text="Next"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NEXT_DETAILS"
+                android:id="@+id/next_view__text"/>
+    </TableLayout>
+
+
+</RelativeLayout>
 
