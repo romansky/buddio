@@ -4,18 +4,33 @@ import android.app.Activity;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.budd.util.JsonCommunicator;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HTTP;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
 
 public class MainActivity extends Activity implements PlayerState.OnConfigChangeListener {
@@ -28,6 +43,8 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 	private MediaPlayer player = null;
 
 	private Handler handler = new Handler();
+
+	private LinkedList<Tracks.Track> remainingTracks;
 
 
 	/**
@@ -97,7 +114,7 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 	}
 
 	private void skip(){
-
+		playNextTrack();
 	}
 
 	private void updatePlayingTrackStats(long totalSecs, long remainingSecs){
@@ -105,6 +122,22 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 		String remainingStr = milliSecondsToTime(remainingSecs);
 
 		((TextView)findViewById(R.id.playing_view__time_remaining)).setText(remainingStr + "/" + totalStr);
+	}
+
+
+	private void playNextTrack(){
+		if (remainingTracks != null && remainingTracks.size() > 0){
+			Tracks.Track nextTrack = remainingTracks.pollFirst();
+			startPlayingTrack(nextTrack);
+
+			if (remainingTracks.size() > 0) {
+				Tracks.Track futureTrack = remainingTracks.peek();
+				((TextView)findViewById(R.id.next_view__text)).setText(futureTrack.title);
+			}
+
+		} else {
+			stopPlaying();
+		}
 	}
 
 	private void startPlayingTrack(Tracks.Track track){
@@ -122,20 +155,22 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 
 		try {
 			player.reset();
-			player.setDataSource(this, myUri);//"http://mp1.somafm.com:8032");
+			player.setDataSource(this, myUri);
 			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			player.prepare(); //don't use prepareAsync for mp3 playback
+			player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+				@Override
+				public void onPrepared(MediaPlayer mp) { mp.start(); }
+			});
+			player.prepareAsync(); //don't use prepareAsync for mp3 playback
 		} catch (IOException e) {
 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		player.start();
 	}
 
 	private void stopPlaying(){
-		player.stop();
+		if (player != null) player.stop();
 	}
 
 	private String milliSecondsToTime(long milliseconds){
@@ -169,20 +204,53 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 		((ToggleButton)findViewById(R.id.player_control__toggle_news)).setChecked(newConfig.news.on);
 		((ToggleButton)findViewById(R.id.player_control__toggle_podcasts)).setChecked(newConfig.podcasts.on);
 
-		new JsonCommunicator<Tracks>(Tracks.class) {
-			@Override
-			protected void onPostExecute(List<Tracks> tracksContainer) {
-				Tracks tracks = tracksContainer.get(0);
-				if (tracks.tracks != null &&  tracks.tracks.size() > 0) {
-					startPlayingTrack(tracks.tracks.get(0));
-				} else {
-					stopPlaying();
+		Gson gson = new Gson();
+		String jsonStr = gson.toJson(playerState.getConfiguration());
+
+
+		final HttpPut httpPut = new HttpPut("http://192.168.43.80:9000/v1/settings");
+//		httpPut.
+		StringEntity entity = null;
+		try {
+			entity = new StringEntity(jsonStr);
+			entity.setContentType("application/json;charset=UTF-8");//text/plain;charset=UTF-8
+			entity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE,"application/json;charset=UTF-8"));
+			httpPut.setEntity(entity);
+
+			final DefaultHttpClient httpClient = new DefaultHttpClient();
+
+
+			new AsyncTask<String, Void, Void>() {
+
+				@Override
+				protected Void doInBackground(String... params) {
+					HttpResponse response = null;
+					try {
+						response = httpClient.execute(httpPut);
+					} catch (IOException e) {
+						e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+					}
+					HttpEntity entity1 = response.getEntity();
+
+					new JsonCommunicator<Tracks>(Tracks.class) {
+						@Override
+						protected void onPostExecute(List<Tracks> tracksContainer) {
+							Tracks tracks = tracksContainer.get(0);
+							if (tracks.tracks != null &&  tracks.tracks.size() > 0) {
+								remainingTracks = new LinkedList<Tracks.Track>(tracks.tracks);
+								playNextTrack();
+							} else {
+								remainingTracks = new LinkedList<Tracks.Track>();
+								stopPlaying();
+							}
+						}
+					}.execute("v1", "next");
+					return null;
 				}
-			}
-		}.execute("v1","next");
-
-
-
-
+			}.execute();
+		} catch (UnsupportedEncodingException e) {
+		} catch (IOException e) {
+			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+		}
 	}
 }

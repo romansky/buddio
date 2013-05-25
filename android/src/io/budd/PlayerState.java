@@ -60,4 +60,8 @@ public class PlayerState {
 		abstract void configChanged(Configuration newConfig);
 	}
 
+	public Configuration getConfiguration(){
+		return this.curConfig;
+	}
+
 }
