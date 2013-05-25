@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
         >
@@ -12,33 +11,78 @@
             <TableRow
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent">
-                <ToggleButton
+                <RelativeLayout
+                        android:gravity="center_horizontal"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textOn="Podcasts"
-                        android:textOff="Podcasts"
-                        android:id="@+id/player_control__toggle_podcasts" android:checked="false"/>
+                        android:layout_height="wrap_content">
+                       <ToggleButton
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/podcastxml"
+                                android:textOn=""
+                                android:textOff=""
+                                android:id="@+id/player_control__toggle_podcasts" android:checked="false"/>
+                       <TextView
+                                android:id="@+id/podcast_name"
+                                android:layout_below="@+id/player_control__toggle_podcasts"
+                                android:text="Pods"
+                                android:layout_centerHorizontal="true"
+                                android:textColor="@android:color/darker_gray"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
 
-                <ToggleButton
+                </RelativeLayout>
+                <RelativeLayout
+                        android:gravity="center_horizontal"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/musicxml"
-                        android:textOn="Music"
-                        android:textOff="Music"
-                        android:id="@+id/player_control__toggle_music"/>
-
-                <ToggleButton
+                        android:layout_height="wrap_content">
+                    <ToggleButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/musicxml"
+                            android:id="@+id/player_control__toggle_music"
+                            android:textOn=""
+                            android:textOff=""/>
+                    <TextView
+                            android:id="@+id/podcast_name"
+                            android:layout_below="@+id/player_control__toggle_music"
+                            android:text="Music"
+                            android:layout_centerHorizontal="true"
+                            android:textColor="@android:color/darker_gray"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                </RelativeLayout>
+                <RelativeLayout
+                        android:gravity="center_horizontal"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textOn="News"
-                        android:textOff="News"
-                        android:id="@+id/player_control__toggle_news"/>
-                <Button
+                        android:layout_height="wrap_content">
+                    <ToggleButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/newsxml"
+                            android:id="@+id/player_control__toggle_news"
+                            android:textOn=""
+                            android:textOff=""/>
+                    <TextView
+                            android:id="@+id/podcast_name"
+                            android:layout_below="@+id/player_control__toggle_news"
+                            android:text="news"
+                            android:layout_centerHorizontal="true"
+                            android:textColor="@android:color/darker_gray"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                </RelativeLayout>
+                <RelativeLayout
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Skip.."
-                        android:id="@+id/player_control__skip" android:layout_column="3"/>
-
+                        android:layout_height="wrap_content">
+                        <Button
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:drawableTop="@drawable/next"
+                                android:id="@+id/player_control__skip" android:layout_column="3"/>
+                </RelativeLayout>
 
             </TableRow>
         </TableLayout>
@@ -48,7 +92,7 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Currently Playiing"
+                android:text="Currently Playing"
                 />
         <TextView
                 android:layout_width="wrap_content"
