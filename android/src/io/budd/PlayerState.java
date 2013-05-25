@@ -1,35 +1,63 @@
 package io.budd;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created: 5/24/13 6:50 PM
  */
 public class PlayerState {
 
 	private static PlayerState instance = null;
-	private boolean isMusicEnabled = false;
-	private boolean isPodcastEnabled = false;
-	private boolean isNewsEnabled = false;
 
-	public static PlayerState getInstance(){
-		if (instance == null) instance = new PlayerState();
+	private Set<OnConfigChangeListener> listeners;
+
+	private Configuration curConfig = null;
+
+	public static PlayerState getInstance(Configuration config){
+		if (instance == null) {
+			instance = new PlayerState();
+			instance.curConfig = config;
+		}
 		return instance;
 	}
 
-	private boolean isPlaying = false;
-
-	private PlayerState(){
-
+	private PlayerState() {
+		this.listeners = new HashSet<OnConfigChangeListener>();
 	}
 
-	public void setIsPlaying(boolean isPlaying){ this.isPlaying = isPlaying; }
-	public boolean getIsPlaying(){ return isPlaying; }
+	public void toggleMusic(boolean isEnabled){
+		this.curConfig.music.on = isEnabled;
+		this.notifyOnConfigChange();
+	}
 
-	public void setIsMusicEnabled(boolean enabled) { this.isMusicEnabled = enabled; }
-	public boolean getIsMusicEnagled(){ return this.isMusicEnabled; }
+	public void toggleNews(boolean isEnabled){
+		this.curConfig.news.on = isEnabled;
+		this.notifyOnConfigChange();
+	}
 
-	public void setIsNewsEnabled(boolean enabled) { this.isNewsEnabled = enabled; }
-	public boolean getIsNewsEnagled(){ return this.isNewsEnabled; }
+	public void togglePodcast(boolean isEnabled){
+		this.curConfig.podcasts.on = isEnabled;
+		this.notifyOnConfigChange();
+	}
 
-	public void setIsPodcastEnabled(boolean enabled) { this.isPodcastEnabled = enabled; }
-	public boolean getIsPodcastEnabled(){ return this.isPodcastEnabled; }
+	private void notifyOnConfigChange(){
+		for (OnConfigChangeListener listener : listeners) {
+			listener.configChanged(this.curConfig);
+		}
+	}
+
+	public void setOnConfigChangeListener(OnConfigChangeListener l){
+		listeners.add(l);
+		l.configChanged(curConfig);
+	}
+
+	public void removeOnConfigChangeListener(OnConfigChangeListener l){
+		listeners.remove(l);
+	}
+
+	public interface OnConfigChangeListener {
+		abstract void configChanged(Configuration newConfig);
+	}
+
 }
