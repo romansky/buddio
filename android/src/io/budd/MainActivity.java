@@ -5,17 +5,20 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.budd.util.JsonCommunicator;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements PlayerState.OnConfigChangeListener {
 
 
 	private static Logger logger = Logger.getLogger(MainActivity.class.getName());
@@ -23,6 +26,8 @@ public class MainActivity extends Activity {
 	private PlayerState playerState = null;
 
 	private MediaPlayer player = null;
+
+	private Handler handler = new Handler();
 
 
 	/**
@@ -33,8 +38,6 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		playerState = PlayerState.getInstance();
-
 		findViewById(R.id.player_control__skip).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -44,42 +47,68 @@ public class MainActivity extends Activity {
 
 		((ToggleButton)findViewById(R.id.player_control__toggle_music)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) { onMusicToggle(isChecked); }
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) { if (playerState != null) playerState.toggleMusic(isChecked); }
 		});
 
 		((ToggleButton)findViewById(R.id.player_control__toggle_podcasts)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) { onPodcastToggle(isChecked); }
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) { if (playerState != null) playerState.togglePodcast(isChecked); }
 		});
 
 		((ToggleButton)findViewById(R.id.player_control__toggle_news)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) { onNewsToggle(isChecked); }
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) { if (playerState != null) playerState.toggleNews(isChecked);; }
 		});
 
-		String settings = "{\"music\":{\"on\":true,\"geners\":[\"Rock\",\"Classic\"]},\"podcasts\":{\"on\":false,\"short\":false,\"medium\":false,\"long\":false},\"news\":{\"on\":false,\"repeat\":0}}";
-		String song = "{\"tracks\":[{\"id\":\"ID\",\"title\":\"Title\",\"source\":\"HTTPSOURCE\"}]}";
-//		JsonCommunicator[.
-		JsonElement element = new JsonParser().parse(settings);
+		initialSetup();
+		startUpdatingTime();
 
-//		startPlayingFile("http://media.blubrry.com/uxpodcast/cdn.uxpodcast.com/uxpodcast-episode-047-uxlx2013-07.mp3");
+		startPlayingFile("http://media.blubrry.com/uxpodcast/cdn.uxpodcast.com/uxpodcast-episode-047-uxlx2013-07.mp3");
 
+	}
+
+	private void startUpdatingTime(){
+		handler.postDelayed(updateTimeTask,500);
+	}
+
+	private Runnable updateTimeTask = new Runnable() {
+
+		@Override
+		public void run() {
+			if (player != null) {
+				long totalDuration = player.getDuration();
+				long currentDuration = player.getCurrentPosition();
+
+				updatePlayingTrackStats(totalDuration, currentDuration);
+
+			}
+
+			handler.postDelayed(this, 500);
+		}
+	};
+
+	private void initialSetup() {
+		new JsonCommunicator<Configuration>(Configuration.class) {
+			@Override
+			protected void onPostExecute(List<Configuration> fullItems) {
+				Configuration config = fullItems.get(0);
+				playerState = PlayerState.getInstance(config);
+				playerState.setOnConfigChangeListener(MainActivity.this);
+			}
+		}.execute("v1","settings");
 	}
 
 	private void skip(){
 
 	}
 
-	private void onMusicToggle(boolean isEnabled){
-		playerState.setIsMusicEnabled(isEnabled);
-	}
+	private void updatePlayingTrackStats(long totalSecs, long remainingSecs){
+//		String totalStr = String.valueOf(totalSecs.intValue() % 60) + ":" + String.valueOf(totalSecs.intValue() - (totalSecs.intValue() % 60));
+//		String remainingStr = String.valueOf(remainingSecs.intValue() % 60) + ":" + String.valueOf(remainingSecs.intValue() - (remainingSecs.intValue() % 60));
+		String totalStr = milliSecondsToTime(totalSecs);
+		String remainingStr = milliSecondsToTime(remainingSecs);
 
-	private void onNewsToggle(boolean isEnabled){
-		playerState.setIsNewsEnabled(isEnabled);
-	}
-
-	private void onPodcastToggle(boolean isEnabled){
-		playerState.setIsPodcastEnabled(isEnabled);
+		((TextView)findViewById(R.id.playing_view__time_remaining)).setText(remainingStr + "/" + totalStr);
 	}
 
 
@@ -103,4 +132,35 @@ public class MainActivity extends Activity {
 		player.start();
 	}
 
+	private String milliSecondsToTime(long milliseconds){
+		String finalTimerString = "";
+		String secondsString = "";
+
+		// Convert total duration into time
+		int hours = (int)( milliseconds / (1000*60*60));
+		int minutes = (int)(milliseconds % (1000*60*60)) / (1000*60);
+		int seconds = (int) ((milliseconds % (1000*60*60)) % (1000*60) / 1000);
+		// Add hours if there
+		if(hours > 0){
+			finalTimerString = hours + ":";
+		}
+
+		// Prepending 0 to seconds if it is one digit
+		if(seconds < 10){
+			secondsString = "0" + seconds;
+		}else{
+			secondsString = "" + seconds;}
+
+		finalTimerString = finalTimerString + minutes + ":" + secondsString;
+
+		// return timer string
+		return finalTimerString;
+	}
+
+	@Override
+	public void configChanged(Configuration newConfig) {
+		((ToggleButton)findViewById(R.id.player_control__toggle_music)).setChecked(newConfig.music.on);
+		((ToggleButton)findViewById(R.id.player_control__toggle_news)).setChecked(newConfig.news.on);
+		((ToggleButton)findViewById(R.id.player_control__toggle_podcasts)).setChecked(newConfig.podcasts.on);
+	}
 }
