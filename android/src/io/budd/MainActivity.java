@@ -63,8 +63,6 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 		initialSetup();
 		startUpdatingTime();
 
-		startPlayingFile("http://media.blubrry.com/uxpodcast/cdn.uxpodcast.com/uxpodcast-episode-047-uxlx2013-07.mp3");
-
 	}
 
 	private void startUpdatingTime(){
@@ -103,8 +101,6 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 	}
 
 	private void updatePlayingTrackStats(long totalSecs, long remainingSecs){
-//		String totalStr = String.valueOf(totalSecs.intValue() % 60) + ":" + String.valueOf(totalSecs.intValue() - (totalSecs.intValue() % 60));
-//		String remainingStr = String.valueOf(remainingSecs.intValue() % 60) + ":" + String.valueOf(remainingSecs.intValue() - (remainingSecs.intValue() % 60));
 		String totalStr = milliSecondsToTime(totalSecs);
 		String remainingStr = milliSecondsToTime(remainingSecs);
 
@@ -120,6 +116,7 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 		}
 
 		try {
+			player.reset();
 			player.setDataSource(this, myUri);//"http://mp1.somafm.com:8032");
 			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			player.prepare(); //don't use prepareAsync for mp3 playback
@@ -130,6 +127,10 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 		}
 
 		player.start();
+	}
+
+	private void stopPlaying(){
+		player.stop();
 	}
 
 	private String milliSecondsToTime(long milliseconds){
@@ -162,5 +163,21 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 		((ToggleButton)findViewById(R.id.player_control__toggle_music)).setChecked(newConfig.music.on);
 		((ToggleButton)findViewById(R.id.player_control__toggle_news)).setChecked(newConfig.news.on);
 		((ToggleButton)findViewById(R.id.player_control__toggle_podcasts)).setChecked(newConfig.podcasts.on);
+
+		new JsonCommunicator<Tracks>(Tracks.class) {
+			@Override
+			protected void onPostExecute(List<Tracks> tracksContainer) {
+				Tracks tracks = tracksContainer.get(0);
+				if (tracks.tracks != null &&  tracks.tracks.size() > 0) {
+					startPlayingFile(tracks.tracks.get(0).url);
+				} else {
+					stopPlaying();
+				}
+			}
+		}.execute("v1","next");
+
+
+
+
 	}
 }
