@@ -107,6 +107,11 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 		((TextView)findViewById(R.id.playing_view__time_remaining)).setText(remainingStr + "/" + totalStr);
 	}
 
+	private void startPlayingTrack(Tracks.Track track){
+		startPlayingFile(track.url);
+		((TextView)findViewById(R.id.playing_view__text)).setText(track.title);
+	}
+
 
 	private void startPlayingFile(String fileUri){
 		Uri myUri = Uri.parse(fileUri);
@@ -169,7 +174,7 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 			protected void onPostExecute(List<Tracks> tracksContainer) {
 				Tracks tracks = tracksContainer.get(0);
 				if (tracks.tracks != null &&  tracks.tracks.size() > 0) {
-					startPlayingFile(tracks.tracks.get(0).url);
+					startPlayingTrack(tracks.tracks.get(0));
 				} else {
 					stopPlaying();
 				}
