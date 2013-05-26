@@ -80,8 +80,9 @@
                         <Button
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:drawableTop="@drawable/next"
-                                android:id="@+id/player_control__skip" android:layout_column="3"/>
+                                android:background="@drawable/next"
+                                android:id="@+id/player_control__skip" android:layout_column="3"
+                                />
                 </RelativeLayout>
 
             </TableRow>
@@ -93,24 +94,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Currently Playing"
+                android:background="#ffffff" android:textColor="#010101"
+                android:textSize="25dip" android:textIsSelectable="false" android:typeface="monospace"
                 />
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="PLAYING_DETAILS"
-                android:id="@+id/playing_view__text"/>
+                android:id="@+id/playing_view__text" android:paddingLeft="20dp"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="TIME_REMAINING"
-                android:id="@+id/playing_view__time_remaining"/>
+                android:id="@+id/playing_view__time_remaining" android:textColor="#3eff3a" android:paddingLeft="20dp"/>
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                  android:text="Next"/>
+                  android:text="Next" android:textColor="#010101" android:background="#ffffff"
+                  android:textSize="25dip" android:typeface="monospace"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="NEXT_DETAILS"
-                android:id="@+id/next_view__text"/>
+                android:id="@+id/next_view__text" android:paddingLeft="20dp"/>
     </TableLayout>
 
 

@@ -46,6 +46,8 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 
 	private LinkedList<Tracks.Track> remainingTracks;
 
+	private Tracks.Track currentlyPlaying;
+
 
 	/**
 	 * Called when the activity is first created.
@@ -91,7 +93,7 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 		@Override
 		public void run() {
 			if (player != null) {
-				long totalDuration = player.getDuration();
+				long totalDuration = (player.isPlaying())? player.getDuration() : 0 ;
 				long currentDuration = player.getCurrentPosition();
 
 				updatePlayingTrackStats(totalDuration, currentDuration);
@@ -117,9 +119,9 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 		playNextTrack();
 	}
 
-	private void updatePlayingTrackStats(long totalSecs, long remainingSecs){
-		String totalStr = milliSecondsToTime(totalSecs);
-		String remainingStr = milliSecondsToTime(remainingSecs);
+	private void updatePlayingTrackStats(long totalMiliSecs, long remainingMiliSecs){
+		String totalStr = milliSecondsToTime((totalMiliSecs == 0) ? currentlyPlaying.length * 1000 : totalMiliSecs);
+		String remainingStr = milliSecondsToTime(remainingMiliSecs);
 
 		((TextView)findViewById(R.id.playing_view__time_remaining)).setText(remainingStr + "/" + totalStr);
 	}
@@ -141,6 +143,7 @@ public class MainActivity extends Activity implements PlayerState.OnConfigChange
 	}
 
 	private void startPlayingTrack(Tracks.Track track){
+		currentlyPlaying = track;
 		startPlayingFile(track.url);
 		((TextView)findViewById(R.id.playing_view__text)).setText(track.title);
 	}
